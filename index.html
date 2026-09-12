@@ -2,118 +2,104 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>FlowSync v1.0.0</title>
   <style>
-    /* --- PALETA DE COLORES Y VARIABLES --- */
     :root {
-      --bg-principal: #9B8D88;   /* Gris Taupe Base */
-      --teal-zetus: #00A39E;     /* Teal Zetus (Cabeceras y Positivos) */
-      --card-bg: #1E2E38;        /* Azul Petróleo Profundo */
-      --card-bg-light: #263845;  /* Contenedores secundarios */
-      --text-main: #FFFFFF;      /* Blanco Puro */
-      --text-muted: #B0BEC5;     /* Gris texto secundario */
-      --alert-warn: #E5A93B;     /* Ámbar Industrial */
-      --alert-danger: #D32F2F;   /* Rojo Acción Crítica */
-      --border-color: rgba(255, 255, 255, 0.12);
-      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --bg-principal: #9B8D88;
+      --teal-zetus: #00A39E;
+      --azul-petroleo: #1E2E38;
+      --blanco: #FFFFFF;
+      --ambar: #E5A93B;
+      --rojo: #D9534F;
+      --card-bg: #1E2E38;
+      --border-radius: 12px;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       -webkit-tap-highlight-color: transparent;
     }
 
     body {
       background-color: var(--bg-principal);
-      font-family: var(--font-family);
-      color: var(--text-main);
+      color: var(--blanco);
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
+      overflow-x: hidden;
     }
 
-    /* --- CABECERA --- */
+    /* Cabecera */
     header {
-      background-color: var(--card-bg);
-      border-bottom: 2px solid var(--teal-zetus);
-      padding: 12px 18px;
+      background-color: var(--azul-petroleo);
+      border-bottom: 3px solid var(--teal-zetus);
+      padding: 14px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-      z-index: 10;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
 
-    .app-brand {
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
       display: flex;
-      align-items: baseline;
+      align-items: center;
       gap: 8px;
     }
 
-    .app-title {
-      font-size: 1.35rem;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      color: #FFFFFF;
-    }
-
-    .app-version {
-      font-size: 0.75rem;
+    .brand-title span {
       color: var(--teal-zetus);
-      font-weight: 700;
     }
 
     .badge-status {
-      font-size: 0.8rem;
-      font-weight: 700;
-      padding: 5px 12px;
+      font-size: 0.75rem;
+      padding: 4px 10px;
       border-radius: 20px;
-      background-color: rgba(255, 255, 255, 0.1);
-      color: var(--text-muted);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.3s ease;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background-color: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
     }
 
-    .badge-status.connected {
-      background-color: rgba(0, 163, 158, 0.2);
-      color: #00FFEA;
-      border: 1px solid var(--teal-zetus);
+    .status-connected {
+      background-color: var(--teal-zetus);
+      color: var(--blanco);
+      border-color: var(--teal-zetus);
     }
 
-    .badge-status::before {
-      content: "";
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background-color: currentColor;
+    .status-disconnected {
+      background-color: var(--ambar);
+      color: var(--azul-petroleo);
+      border-color: var(--ambar);
     }
 
-    /* --- CONTENIDO PRINCIPAL --- */
+    /* Contenido Principal / Vistas */
     main {
       flex: 1;
-      overflow-y: auto;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      padding-bottom: 85px; /* Espacio para barra inferior */
+      padding: 16px;
+      padding-bottom: 85px; /* Espacio para el navbar inferior */
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
     }
 
     .tab-content {
       display: none;
-      flex-direction: column;
-      gap: 14px;
       animation: fadeIn 0.2s ease-in-out;
     }
 
     .tab-content.active {
-      display: flex;
+      display: block;
     }
 
     @keyframes fadeIn {
@@ -121,1032 +107,1035 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* --- TARJETAS --- */
+    /* Tarjetas y Contenedores */
     .card {
       background-color: var(--card-bg);
-      border-radius: 12px;
+      border-radius: var(--border-radius);
       padding: 16px;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
 
     .card-title {
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: 700;
       color: var(--teal-zetus);
       margin-bottom: 12px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 6px;
     }
 
-    .card-desc {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-bottom: 14px;
-      line-height: 1.3;
-    }
-
-    /* --- BOTONES Y ENTRADAS --- */
+    /* Botones */
     .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
       width: 100%;
       padding: 12px 14px;
       font-size: 0.95rem;
-      font-weight: 600;
+      font-weight: 700;
       border-radius: 8px;
       border: none;
       cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-      color: var(--text-main);
+      transition: opacity 0.2s, transform 0.1s;
+      color: var(--blanco);
+      margin-bottom: 10px;
     }
 
     .btn:active {
       transform: scale(0.98);
-      filter: brightness(0.9);
+      opacity: 0.9;
     }
 
     .btn:disabled {
       opacity: 0.45;
       cursor: not-allowed;
-      transform: none;
     }
 
-    .btn-teal {
+    .btn-positive {
       background-color: var(--teal-zetus);
-      color: #071e22;
-      font-weight: 700;
     }
 
-    .btn-action {
-      background-color: #2979FF;
-    }
-
-    .btn-warn {
-      background-color: var(--alert-warn);
-      color: #1a1a1a;
+    .btn-warning {
+      background-color: var(--ambar);
+      color: var(--azul-petroleo);
     }
 
     .btn-danger {
-      background-color: var(--alert-danger);
+      background-color: var(--rojo);
     }
 
-    .btn-secondary {
-      background-color: var(--card-bg-light);
-      border: 1px solid var(--border-color);
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--teal-zetus);
+      color: var(--teal-zetus);
     }
 
-    .btn-group {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+    /* Formularios y Cajas de Datos */
+    .input-group {
       margin-bottom: 12px;
     }
 
-    .form-label {
-      font-size: 0.82rem;
-      color: var(--text-muted);
+    .input-group label {
+      display: block;
+      font-size: 0.8rem;
       font-weight: 600;
+      margin-bottom: 4px;
+      color: rgba(255,255,255,0.8);
     }
 
-    .input-field {
+    .input-group input, .input-group textarea {
       width: 100%;
-      background-color: rgba(0, 0, 0, 0.35);
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      padding: 10px 12px;
-      color: var(--text-main);
-      font-size: 0.95rem;
-      outline: none;
-      font-family: inherit;
-    }
-
-    .input-field:focus {
-      border-color: var(--teal-zetus);
-    }
-
-    .info-box {
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 0.88rem;
-      margin-top: 8px;
-      word-break: break-all;
-    }
-
-    /* --- MONITOR SERIE --- */
-    .terminal-container {
-      background-color: #0d151a;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      height: 400px;
-      overflow-y: auto;
       padding: 10px;
-      font-family: "Courier New", Courier, monospace;
-      font-size: 0.82rem;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background-color: rgba(0,0,0,0.25);
+      color: var(--blanco);
+      font-size: 0.9rem;
+    }
+
+    .input-group textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .display-box {
+      background-color: rgba(0,0,0,0.35);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: #72f1dc;
+      margin-top: 8px;
+      border-left: 3px solid var(--teal-zetus);
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    /* Tabla previa de base de datos */
+    .table-container {
+      overflow-x: auto;
+      max-height: 250px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--teal-zetus);
+      color: var(--blanco);
+      padding: 8px 10px;
+      position: sticky;
+      top: 0;
+    }
+
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background-color: rgba(0,0,0,0.15);
+    }
+
+    /* Monitor Hex */
+    .terminal-box {
+      background-color: #0b1116;
+      border-radius: 8px;
+      height: 380px;
+      padding: 12px;
+      overflow-y: auto;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.8rem;
+      border: 1px solid rgba(255,255,255,0.15);
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
     }
 
     .log-entry {
-      line-height: 1.35;
+      line-height: 1.4;
       word-break: break-all;
     }
 
-    .log-entry.tx {
-      color: #FFD54F; /* Amarillo Tx */
+    .log-tx {
+      color: #5cf2bd;
     }
 
-    .log-entry.rx {
-      color: #00E676; /* Verde Rx */
+    .log-rx {
+      color: #f7ba53;
     }
 
-    .log-entry.sys {
-      color: #90CAF9;
+    .log-sys {
+      color: #a0aec0;
+      font-style: italic;
     }
 
-    /* --- NAVEGACIÓN INFERIOR (TABS) --- */
+    /* Barra de Navegación Inferior (Tabs) */
     nav.bottom-nav {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      background-color: var(--card-bg);
-      border-top: 1px solid var(--border-color);
+      background-color: var(--azul-petroleo);
+      border-top: 2px solid var(--teal-zetus);
       display: flex;
       justify-content: space-around;
-      padding: 6px 4px 10px;
-      z-index: 50;
-      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
+      padding: 6px 0;
+      z-index: 100;
+      box-shadow: 0 -3px 12px rgba(0,0,0,0.3);
     }
 
-    .nav-item {
+    .nav-tab {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.6);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       font-weight: 600;
-      padding: 6px;
-      flex: 1;
       cursor: pointer;
+      width: 20%;
+      gap: 3px;
       transition: color 0.2s;
     }
 
-    .nav-item svg {
-      width: 22px;
-      height: 22px;
+    .nav-tab svg {
+      width: 20px;
+      height: 20px;
       fill: currentColor;
     }
 
-    .nav-item.active {
+    .nav-tab.active {
       color: var(--teal-zetus);
     }
 
-    /* --- MODALES / POPUPS --- */
-    .modal-backdrop {
+    /* Ventanas Emergentes (Modals) */
+    .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.75);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      z-index: 100;
+      background: rgba(0,0,0,0.7);
       backdrop-filter: blur(3px);
-    }
-
-    .modal-backdrop.show {
-      display: flex;
-    }
-
-    .modal-box {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      width: 100%;
-      max-width: 360px;
+      display: none;
+      align-items: center;
+      justify-content: center;
       padding: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+
+    .modal-overlay.active {
       display: flex;
-      flex-direction: column;
-      gap: 14px;
+    }
+
+    .modal-card {
+      background-color: var(--card-bg);
+      border: 2px solid var(--teal-zetus);
+      border-radius: var(--border-radius);
+      width: 100%;
+      max-width: 380px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      animation: modalZoom 0.2s ease;
+    }
+
+    @keyframes modalZoom {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
     }
 
     .modal-title {
       font-size: 1.15rem;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--teal-zetus);
-    }
-
-    .modal-title.warn {
-      color: var(--alert-warn);
-    }
-
-    .modal-title.danger {
-      color: var(--alert-danger);
+      margin-bottom: 12px;
     }
 
     .modal-body {
       font-size: 0.9rem;
-      color: var(--text-main);
-      line-height: 1.4;
-      white-space: pre-line;
+      line-height: 1.5;
+      margin-bottom: 20px;
+      color: rgba(255,255,255,0.9);
+      text-align: left;
     }
 
-    .modal-footer {
+    .modal-actions {
       display: flex;
       gap: 10px;
-      justify-content: flex-end;
+    }
+
+    .modal-actions .btn {
+      margin-bottom: 0;
     }
   </style>
 </head>
 <body>
 
-  <!-- CABECERA DE APLICACIÓN -->
+  <!-- Cabecera -->
   <header>
-    <div class="app-brand">
-      <span class="app-title">FlowSync</span>
-      <span class="app-version">v1.0.0</span>
+    <div class="brand-title">
+      <span>FlowSync</span> v1.0.0
     </div>
-    <div id="connectionBadge" class="badge-status">Desconectado</div>
+    <div id="connStatusBadge" class="badge-status status-disconnected">
+      Desconectado
+    </div>
   </header>
 
-  <!-- CONTENIDO CENTRAL POR PESTAÑAS -->
+  <!-- Contenedor Principal de Pantallas -->
   <main>
+    
+    <!-- TAB 1: Conexión Bluetooth -->
+    <section id="tab-ble" class="tab-content active">
+      <div class="card">
+        <h3 class="card-title">Enlace de Comunicación BLE</h3>
+        <p style="font-size:0.85rem; margin-bottom: 16px; color: rgba(255,255,255,0.75);">
+          Conexión directa optimizada con módulo HM-10 industrial. Presione conectar para buscar y asociar el caudalímetro.
+        </p>
 
-    <!-- TAB 1: CONEXIÓN BLUETOOTH -->
-    <section id="tab-connect" class="tab-content active">
-      <div class="card">
-        <div class="card-title">1. Conexión BLE</div>
-        <p class="card-desc">Conexión directa mediante Bluetooth Low Energy al módulo HM-10 del dispositivo de medición.</p>
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          <button id="btnConnect" class="btn btn-teal">
-            <svg style="width:18px;height:18px;fill:currentColor" viewBox="0 0 24 24"><path d="M7 12l5-5 5 5-1.41 1.41L13 10.83V17h-2v-6.17l-2.59 2.58L7 12m5-10A10 10 0 1 0 22 12 10 10 0 0 0 12 2z"/></svg>
-            Conectar
-          </button>
-          <button id="btnDisconnect" class="btn btn-danger" disabled>Desconectar</button>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Dispositivo Asociado</div>
-        <div id="deviceDetails" class="info-box" style="color: var(--text-muted);">
-          Sin dispositivo seleccionado.
-        </div>
+        <button id="btnConnect" class="btn btn-positive" onclick="appBle.connectDevice()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.71 7.71L12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z"/></svg>
+          Conectar
+        </button>
+
+        <button id="btnDisconnect" class="btn btn-warning" onclick="appBle.disconnectDevice()" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/></svg>
+          Desconectar
+        </button>
+
+        <div class="display-box" id="bleDeviceInfo">Estado: Esperando comando del usuario...</div>
       </div>
     </section>
 
-    <!-- TAB 2: BASE DE DATOS -->
+    <!-- TAB 2: Base de datos -->
     <section id="tab-db" class="tab-content">
       <div class="card">
-        <div class="card-title">2. Memoria y Archivo CSV</div>
-        <p class="card-desc">Descargue los registros guardados en la memoria del caudalímetro y expórtelos a un archivo plano delimitado por comas.</p>
-        
-        <div style="display:flex; flex-direction: column; gap: 10px;">
-          <button id="btnDownloadDataMem" class="btn btn-action">Descargar Memoria (0x30)</button>
-          <button id="btnExportCSV" class="btn btn-teal" disabled>Exportar CSV</button>
-        </div>
+        <h3 class="card-title">Descarga y Exportación de Registros</h3>
+        <p style="font-size:0.85rem; margin-bottom: 14px; color: rgba(255,255,255,0.75);">
+          Recupere los datos de despachos almacenados y genere un reporte delimitado por comas (.csv).
+        </p>
 
-        <div class="info-box" style="margin-top: 14px;">
-          <span id="dataMemCounter">Bytes: 0 (~0 reg)</span>
+        <button class="btn btn-positive" onclick="appData.downloadMemory()">
+          Descargar Memoria (0x30)
+        </button>
+
+        <button id="btnExportCsv" class="btn btn-warning" onclick="appData.exportCsv()" disabled>
+          Exportar Archivo CSV
+        </button>
+
+        <div style="font-size: 0.8rem; margin: 12px 0 4px; font-weight:700;">Registros Procesados (<span id="lblRecordCount">0</span>):</div>
+        <div class="table-container">
+          <table id="tblRecords">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>FECHA</th>
+                <th>HORA</th>
+                <th>LITROS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="4" style="text-align:center; color:rgba(255,255,255,0.5);">Sin datos descargados</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
 
-    <!-- TAB 3: COMPROBANTE -->
-    <section id="tab-receipt" class="tab-content">
+    <!-- TAB 3: Comprobante -->
+    <section id="tab-ticket" class="tab-content">
       <div class="card">
-        <div class="card-title">3. Comprobantes de Despacho</div>
-        <p class="card-desc">Comandos directos hacia la impresora térmica del caudalímetro.</p>
-        
-        <div style="display:flex; flex-direction: column; gap: 10px;">
-          <button id="btnPrintLast" class="btn btn-secondary">Imprimir Despacho Finalizado (0x35)</button>
-          <button id="btnPrintCurrent" class="btn btn-secondary">Imprimir Despacho Actual (0x37)</button>
-        </div>
+        <h3 class="card-title">Emisión e Impresión de Tickets</h3>
+        <p style="font-size:0.85rem; margin-bottom: 16px; color: rgba(255,255,255,0.75);">
+          Envío de órdenes de impresión directamente a la impresora asociada al microcontrolador.
+        </p>
+
+        <button class="btn btn-positive" onclick="appTicket.printFinished()">
+          Imprimir despacho finalizado (0x35)
+        </button>
+
+        <button class="btn btn-positive" onclick="appTicket.printCurrent()">
+          Imprimir despacho actual (0x37)
+        </button>
       </div>
     </section>
 
-    <!-- TAB 4: OPCIONES ESPECIALES -->
+    <!-- TAB 4: Opciones especiales -->
     <section id="tab-special" class="tab-content">
-      
-      <!-- Bloque 1: Configuración -->
+      <!-- 1° Bloque Configuración -->
       <div class="card">
-        <div class="card-title">1° Configuración</div>
+        <h3 class="card-title">1° Bloque: Configuración</h3>
         
-        <!-- Calendario -->
-        <div class="form-group">
-          <label class="form-label">Calendario (0x38 / 0x39)</label>
-          <input type="datetime-local" id="calendarInput" class="input-field" />
-          <div class="btn-group" style="margin-top: 6px;">
-            <button id="btnReadCal" class="btn btn-secondary">Leer</button>
-            <button id="btnWriteCal" class="btn btn-action">Guardar</button>
-          </div>
+        <div class="input-group">
+          <label>Configurar Fecha / Hora Micro (6 Bytes):</label>
+          <input type="datetime-local" id="cfgDateTimeInput" />
         </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-positive" onclick="appSpecial.readCalendar()">Leer Calendario (0x38)</button>
+          <button class="btn btn-positive" onclick="appSpecial.writeCalendar()">Configurar (0x39)</button>
+        </div>
+        <div class="display-box" id="dispCalendar">Datos de Calendario: --</div>
 
-        <!-- Ticket -->
-        <div class="form-group" style="margin-top: 12px;">
-          <label class="form-label">Ticket (52 Bytes) (0x3B / 0x3C)</label>
-          <input type="text" id="ticketInput" maxlength="52" class="input-field" placeholder="Texto del encabezado del ticket..." />
-          <div class="btn-group" style="margin-top: 6px;">
-            <button id="btnReadTicket" class="btn btn-secondary">Leer Ticket</button>
-            <button id="btnWriteTicket" class="btn btn-action">Guardar Ticket</button>
-          </div>
+        <hr style="border:none; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;" />
+
+        <div class="input-group">
+          <label>Datos Comprobante / Ticket (Máx 52 caracteres):</label>
+          <textarea id="cfgTicketInput" maxlength="52" placeholder="Encabezado o datos de ticket..."></textarea>
         </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-positive" onclick="appSpecial.readTicketConfig()">Leer Ticket (0x3B)</button>
+          <button class="btn btn-positive" onclick="appSpecial.writeTicketConfig()">Configurar (0x3C)</button>
+        </div>
+        <div class="display-box" id="dispTicketConfig">Datos Ticket: --</div>
       </div>
 
-      <!-- Bloque 2: Base de Datos -->
+      <!-- 2° Bloque Base de datos -->
       <div class="card">
-        <div class="card-title">2° Base de Datos (Sistema y Registros)</div>
-        <div style="display:flex; flex-direction:column; gap:10px;">
-          <button id="btnReadSysMem" class="btn btn-action">Leer Memoria de Sistema (0x31)</button>
-          <button id="btnEraseDataMem" class="btn btn-warn">Borrar Memoria de Datos (0x32)</button>
-          <button id="btnEraseSysMem" class="btn btn-warn">Borrar Memoria de Sistema (0x33)</button>
+        <h3 class="card-title">2° Bloque: Operaciones de Memoria</h3>
+        
+        <button class="btn btn-positive" onclick="appSpecial.readSystemMemory()">
+          Leer memoria de sistema (0x31)
+        </button>
+        <div class="display-box" id="dispSysMem">Memoria de Sistema (64 bytes): --</div>
+
+        <div style="margin-top: 14px;">
+          <button class="btn btn-danger" onclick="appSpecial.promptErase('sys')">
+            Borrar memoria sector de sistema (0x33)
+          </button>
+          <button class="btn btn-danger" onclick="appSpecial.promptErase('data')">
+            Borrar memoria sector de datos (0x32)
+          </button>
         </div>
       </div>
 
-      <!-- Bloque 3: Información -->
+      <!-- 3° Bloque Información -->
       <div class="card">
-        <div class="card-title">3° Información de Despachos</div>
-        <div style="display:flex; flex-direction:column; gap:10px;">
-          <button id="btnReadLastRecord" class="btn btn-secondary">Leer Despacho Finalizado (0x34)</button>
-          <button id="btnReadCurrentRecord" class="btn btn-secondary">Leer Despacho Actual (0x36)</button>
-          <button id="btnReadDispatchCount" class="btn btn-secondary">Leer Cantidad Despachos (0x3A)</button>
-        </div>
+        <h3 class="card-title">3° Bloque: Información de Operación</h3>
+        
+        <button class="btn btn-positive" onclick="appSpecial.readLastFinished()">
+          Leer despacho finalizado (0x34)
+        </button>
+        <div class="display-box" id="dispLastRecord">Último Despacho Guardado: --</div>
+
+        <button class="btn btn-positive" style="margin-top:10px;" onclick="appSpecial.readCurrentUnsaved()">
+          Leer despacho actual (0x36)
+        </button>
+        <div class="display-box" id="dispCurrRecord">Despacho Actual No Guardado: --</div>
+
+        <button class="btn btn-positive" style="margin-top:10px;" onclick="appSpecial.readTotalDispatches()">
+          Leer cantidad de despachos (0x3A)
+        </button>
+        <div class="display-box" id="dispDispatchCount">Cantidad de despachos: --</div>
       </div>
 
-      <!-- Bloque 4: Acerca de app -->
+      <!-- 4° Bloque Acerca de app -->
       <div class="card">
-        <div class="card-title">4° Acerca de FlowSync</div>
-        <div style="font-size: 0.88rem; line-height: 1.6; color: var(--text-muted);">
-          <p><strong style="color:var(--text-main);">Aplicación:</strong> FlowSync</p>
-          <p><strong style="color:var(--text-main);">Versión:</strong> v1.0.0</p>
-          <p><strong style="color:var(--text-main);">Desarrollador:</strong> Zetus 2026</p>
-          <p style="margin-top: 6px;"><strong style="color:var(--text-main);">Información:</strong> Herramienta diseñada para configurar y sincronizar datos con caudalímetros con salida de datos.</p>
-        </div>
+        <h3 class="card-title">4° Bloque: Acerca de la Aplicación</h3>
+        <p><strong>Nombre:</strong> FlowSync</p>
+        <p><strong>Versión:</strong> v1.0.0</p>
+        <p><strong>Desarrollador:</strong> Zetus 2026</p>
+        <p style="margin-top: 8px; font-size: 0.85rem; color: rgba(255,255,255,0.85); line-height: 1.4;">
+          <strong>Información:</strong> Herramienta diseñada para configurar y sincronizar datos con caudalímetros con salida de datos.
+        </p>
       </div>
-
     </section>
 
-    <!-- TAB 5: MONITOR SERIE -->
+    <!-- TAB 5: Monitor -->
     <section id="tab-monitor" class="tab-content">
-      <div class="card" style="padding-bottom: 8px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <span class="card-title" style="margin-bottom:0;">Monitor Serie</span>
-          <button id="btnClearLogs" class="btn btn-secondary" style="width: auto; padding: 6px 14px; font-size: 0.8rem;">Limpiar</button>
+      <div class="card" style="padding: 12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <h3 class="card-title" style="margin-bottom:0; border:none;">Monitor Hexadecimal</h3>
+          <button class="btn btn-outline" style="width:auto; padding:6px 12px; margin-bottom:0; font-size:0.75rem;" onclick="appMonitor.clear()">
+            Limpiar
+          </button>
         </div>
-        <div id="terminal" class="terminal-container"></div>
+        <div class="terminal-box" id="hexTerminal">
+          <div class="log-entry log-sys">[SYS] Monitor inicializado en modo HEX estricto.</div>
+        </div>
       </div>
     </section>
 
   </main>
 
-  <!-- MENÚ DE NAVEGACIÓN INFERIOR -->
+  <!-- Barra de Navegación Inferior -->
   <nav class="bottom-nav">
-    <button class="nav-item active" onclick="switchTab('tab-connect', this)">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-      <span>BLE</span>
+    <button class="nav-tab active" onclick="switchTab('tab-ble', this)">
+      <svg viewBox="0 0 24 24"><path d="M17.71 7.71L12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z"/></svg>
+      Conexión
     </button>
-    <button class="nav-item" onclick="switchTab('tab-db', this)">
+    <button class="nav-tab" onclick="switchTab('tab-db', this)">
       <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-      <span>Base Datos</span>
+      Datos
     </button>
-    <button class="nav-item" onclick="switchTab('tab-receipt', this)">
-      <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-4 11H9v-5h6v5zm4-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm1-5H4V4c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v3z"/></svg>
-      <span>Comprobante</span>
+    <button class="nav-tab" onclick="switchTab('tab-ticket', this)">
+      <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-4 11H9v-5h6v5zm4-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm1-9H4v4h16V3z"/></svg>
+      Ticket
     </button>
-    <button class="nav-item" onclick="switchTab('tab-special', this)">
+    <button class="nav-tab" onclick="switchTab('tab-special', this)">
       <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-      <span>Opciones</span>
+      Especial
     </button>
-    <button class="nav-item" onclick="switchTab('tab-monitor', this)">
-      <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H4v-4h11v4zm0-5H4V9h11v4zm5 5h-4V9h4v9z"/></svg>
-      <span>Monitor</span>
+    <button class="nav-tab" onclick="switchTab('tab-monitor', this)">
+      <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1 14H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v10c0 .55-.45 1-1 1z"/></svg>
+      Monitor
     </button>
   </nav>
 
-  <!-- MODAL GENÉRICO / CONFIRMACIÓN -->
-  <div id="appModal" class="modal-backdrop">
-    <div class="modal-box">
-      <div id="modalTitle" class="modal-title">Notificación</div>
-      <div id="modalBody" class="modal-body">Mensaje</div>
-      <div class="modal-footer" id="modalFooter">
-        <button id="modalBtnPrimary" class="btn btn-teal" style="width:auto; padding: 8px 18px;">Aceptar</button>
+  <!-- Modal Genérico de Notificación / Finalización -->
+  <div id="infoModal" class="modal-overlay">
+    <div class="modal-card">
+      <h4 class="modal-title" id="infoModalTitle">Notificación</h4>
+      <div class="modal-body" id="infoModalBody">Contenido del mensaje</div>
+      <button class="btn btn-positive" onclick="closeModal('infoModal')">Aceptar</button>
+    </div>
+  </div>
+
+  <!-- Modal de Doble Confirmación para Borrado -->
+  <div id="confirmModal" class="modal-overlay">
+    <div class="modal-card">
+      <h4 class="modal-title" style="color:var(--rojo);" id="confirmModalTitle">Atención</h4>
+      <div class="modal-body" id="confirmModalBody">¿Confirma la operación?</div>
+      <div class="modal-actions">
+        <button class="btn btn-warning" onclick="closeModal('confirmModal')">Cancelar</button>
+        <button class="btn btn-danger" id="btnConfirmProceed">Continuar</button>
       </div>
     </div>
   </div>
 
-  <!-- SCRIPT LÓGICA Y COMUNICACIÓN -->
   <script>
-    /* --- CONSTANTES BLE HM-10 --- */
-    const HM10_SERVICE_UUID = '0000ffe0-0000-1000-8000-00805f9b34fb';
-    const HM10_CHAR_UUID    = '0000ffe1-0000-1000-8000-00805f9b34fb';
+    /* ==========================================================================
+       GESTIÓN DE INTERFAZ Y NAVEGACIÓN
+       ========================================================================== */
+    function switchTab(tabId, btnElement) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btnElement.classList.add('active');
+    }
 
-    /* --- COMANDOS HEX MICROCONTROLADOR --- */
-    const CMD = {
-      DOWNLOAD_DATA_MEM: 0x30,
-      READ_SYS_MEM:      0x31, // 64 bytes
-      ERASE_DATA_MEM:    0x32,
-      ERASE_SYS_MEM:     0x33,
-      READ_LAST_REC:     0x34, // 10 bytes
-      PRINT_LAST:        0x35,
-      READ_CURR_REC:     0x36, // 10 bytes
-      PRINT_CURR:        0x37,
-      READ_CALENDAR:     0x38, // 6 bytes
-      WRITE_CALENDAR:    0x39, // 6 bytes
-      READ_COUNT:        0x3A, // 4 bytes
-      READ_TICKET:       0x3B, // 52 bytes
-      WRITE_TICKET:      0x3C  // 52 bytes
+    function showModal(title, messageHtml) {
+      document.getElementById('infoModalTitle').innerText = title;
+      document.getElementById('infoModalBody').innerHTML = messageHtml;
+      document.getElementById('infoModal').classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    /* ==========================================================================
+       MONITOR HEXADECIMAL
+       ========================================================================== */
+    const appMonitor = {
+      term: document.getElementById('hexTerminal'),
+      log(direction, uint8Array) {
+        const hex = Array.from(uint8Array)
+          .map(b => b.toString(16).padStart(2, '0').toUpperCase())
+          .join(' ');
+        
+        const line = document.createElement('div');
+        line.className = `log-entry ${direction === 'TX' ? 'log-tx' : 'log-rx'}`;
+        const timeStr = new Date().toTimeString().split(' ')[0];
+        line.innerText = `[${timeStr}] [${direction}] ${hex}`;
+        this.term.appendChild(line);
+        this.term.scrollTop = this.term.scrollHeight;
+      },
+      sys(message) {
+        const line = document.createElement('div');
+        line.className = 'log-entry log-sys';
+        line.innerText = `[SYS] ${message}`;
+        this.term.appendChild(line);
+        this.term.scrollTop = this.term.scrollHeight;
+      },
+      clear() {
+        this.term.innerHTML = '';
+      }
     };
 
-    /* --- VARIABLES DE ESTADO --- */
-    let connectedDeviceId = null;
-    let isConnected = false;
-    let downloadedBuffer = []; // Bytes acumulados de memoria de datos
-    let downloadStartTime = 0;
-    let downloadTimer = null;
-    let isDownloading = false;
+    /* ==========================================================================
+       COMUNICACIÓN BLE (Capacitor BleClient con UUIDs de HM-10)
+       ========================================================================== */
+    // UUIDs HM-10 por defecto
+    const HM10_SERVICE = '0000ffe0-0000-1000-8000-00805f9b34fb';
+    const HM10_CHAR    = '0000ffe1-0000-1000-8000-00805f9b34fb';
 
-    // Buffer temporal para comandos de respuesta puntual
-    let activeCommand = null;
-    let commandResponseBuffer = [];
-    let expectedBytes = 0;
-    let commandTimeout = null;
-
-    /* --- CAPACITOR BLE CLIENT PROXY --- */
+    // Acceso dinámico al cliente nativo
     const BleClient = window.Capacitor?.Plugins?.BleClient || window.BleClient;
 
-    /* --- ELEMENTOS DEL DOM --- */
-    const badgeStatus = document.getElementById('connectionBadge');
-    const deviceDetails = document.getElementById('deviceDetails');
-    const btnConnect = document.getElementById('btnConnect');
-    const btnDisconnect = document.getElementById('btnDisconnect');
-    const btnExportCSV = document.getElementById('btnExportCSV');
-    const dataMemCounter = document.getElementById('dataMemCounter');
-    const terminal = document.getElementById('terminal');
+    const appBle = {
+      connectedDeviceId: null,
+      isConnected: false,
+      rxBuffer: [],
+      activeListener: null,
 
-    // Inicializar input de calendario con fecha y hora actual
-    function initDateTimeInput() {
-      const now = new Date();
-      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-      document.getElementById('calendarInput').value = now.toISOString().slice(0, 16);
-    }
-    initDateTimeInput();
-
-    /* --- CAMBIO DE PESTAÑAS (TABS) --- */
-    function switchTab(tabId, el) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      el.classList.add('active');
-    }
-
-    /* --- MONITOR SERIE (FORMATO HEXADECIMAL ESTRICTO) --- */
-    function logTx(bytes) {
-      const hexStr = bytesToHex(bytes);
-      appendLog(`[${getTimeStamp()}] Tx -> ${hexStr}`, 'tx');
-    }
-
-    function logRx(bytes) {
-      const hexStr = bytesToHex(bytes);
-      appendLog(`[${getTimeStamp()}] Rx <- ${hexStr}`, 'rx');
-    }
-
-    function logSys(msg) {
-      appendLog(`[${getTimeStamp()}] ${msg}`, 'sys');
-    }
-
-    function appendLog(text, className) {
-      const div = document.createElement('div');
-      div.className = `log-entry ${className}`;
-      div.textContent = text;
-      terminal.appendChild(div);
-      terminal.scrollTop = terminal.scrollHeight;
-    }
-
-    function getTimeStamp() {
-      const d = new Date();
-      return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
-    }
-
-    function bytesToHex(bytes) {
-      return Array.from(bytes)
-        .map(b => '0x' + b.toString(16).padStart(2, '0'))
-        .join(' ');
-    }
-
-    function pad2(n) {
-      return n.toString().padStart(2, '0');
-    }
-
-    document.getElementById('btnClearLogs').addEventListener('click', () => {
-      terminal.innerHTML = '';
-    });
-
-    /* --- MODALES --- */
-    function showModal(title, message, isWarn = false, isDanger = false) {
-      return new Promise((resolve) => {
-        const modal = document.getElementById('appModal');
-        const mTitle = document.getElementById('modalTitle');
-        const mBody = document.getElementById('modalBody');
-        const mFooter = document.getElementById('modalFooter');
-
-        mTitle.textContent = title;
-        mTitle.className = 'modal-title' + (isDanger ? ' danger' : isWarn ? ' warn' : '');
-        mBody.textContent = message;
-
-        mFooter.innerHTML = '';
-        const btnOk = document.createElement('button');
-        btnOk.className = 'btn btn-teal';
-        btnOk.style.width = 'auto';
-        btnOk.style.padding = '8px 20px';
-        btnOk.textContent = 'Aceptar';
-        btnOk.onclick = () => {
-          modal.classList.remove('show');
-          resolve(true);
-        };
-        mFooter.appendChild(btnOk);
-
-        modal.classList.add('show');
-      });
-    }
-
-    function showConfirmModal(title, message, isDanger = false) {
-      return new Promise((resolve) => {
-        const modal = document.getElementById('appModal');
-        const mTitle = document.getElementById('modalTitle');
-        const mBody = document.getElementById('modalBody');
-        const mFooter = document.getElementById('modalFooter');
-
-        mTitle.textContent = title;
-        mTitle.className = 'modal-title' + (isDanger ? ' danger' : ' warn');
-        mBody.textContent = message;
-
-        mFooter.innerHTML = '';
-        const btnCancel = document.createElement('button');
-        btnCancel.className = 'btn btn-secondary';
-        btnCancel.style.width = 'auto';
-        btnCancel.style.padding = '8px 16px';
-        btnCancel.textContent = 'Cancelar';
-        btnCancel.onclick = () => {
-          modal.classList.remove('show');
-          resolve(false);
-        };
-
-        const btnConfirm = document.createElement('button');
-        btnConfirm.className = isDanger ? 'btn btn-danger' : 'btn btn-warn';
-        btnConfirm.style.width = 'auto';
-        btnConfirm.style.padding = '8px 16px';
-        btnConfirm.textContent = 'Confirmar';
-        btnConfirm.onclick = () => {
-          modal.classList.remove('show');
-          resolve(true);
-        };
-
-        mFooter.appendChild(btnCancel);
-        mFooter.appendChild(btnConfirm);
-        modal.classList.add('show');
-      });
-    }
-
-    /* --- CONTROLADORES BLE (CAPACITOR PLUGIN) --- */
-    async function initBLE() {
-      if (BleClient) {
+      async init() {
         try {
-          await BleClient.initialize();
-          logSys('Plugin BLE inicializado con éxito');
+          if (BleClient) {
+            await BleClient.initialize();
+            appMonitor.sys('Plugin nativo BLE inicializado.');
+          } else {
+            appMonitor.sys('BleClient no detectado. Modo web.');
+          }
         } catch (e) {
-          logSys('BLE init error: ' + e.message);
+          appMonitor.sys('Error al iniciar BLE: ' + e.message);
         }
-      } else {
-        logSys('Aviso: Ejecutando en entorno Web. Utilizando Web Bluetooth API o emulador si existe.');
-      }
-    }
-    initBLE();
+      },
 
-    // Conectar BLE
-    btnConnect.addEventListener('click', async () => {
-      try {
-        logSys('Iniciando escaneo de dispositivos...');
-        if (BleClient) {
+      async connectDevice() {
+        try {
+          appMonitor.sys('Buscando dispositivo...');
+          if (!BleClient) throw new Error('Plugin BleClient nativo no disponible.');
+
           const device = await BleClient.requestDevice({
-            services: [HM10_SERVICE_UUID],
-            optionalServices: []
+            services: [HM10_SERVICE]
           });
-          
-          await BleClient.connect(device.deviceId, (deviceId) => onDisconnected(deviceId));
-          connectedDeviceId = device.deviceId;
-          setConnectedState(true, device.name || device.deviceId);
 
-          // Iniciar notificaciones en la característica HM-10
+          await BleClient.connect(device.deviceId, (devId) => {
+            this.handleDisconnect();
+          });
+
+          this.connectedDeviceId = device.deviceId;
+          this.isConnected = true;
+          this.updateUiState(true, device.name || device.deviceId);
+
+          // Escuchar notificaciones del HM-10
           await BleClient.startNotifications(
-            connectedDeviceId,
-            HM10_SERVICE_UUID,
-            HM10_CHAR_UUID,
-            (value) => handleIncomingData(new Uint8Array(value.buffer))
+            this.connectedDeviceId,
+            HM10_SERVICE,
+            HM10_CHAR,
+            (value) => {
+              const buffer = new Uint8Array(value.buffer);
+              appMonitor.log('RX', buffer);
+              this.onDataReceived(buffer);
+            }
           );
 
-          logSys('Conectado y suscrito a notificaciones.');
-          showModal('Conexión Exitosa', `Conectado al caudalímetro:\n${device.name || device.deviceId}`);
-        } else if (navigator.bluetooth) {
-          // Fallback a Web Bluetooth en navegadores compatibles
-          const device = await navigator.bluetooth.requestDevice({
-            filters: [{ services: [HM10_SERVICE_UUID] }]
-          });
-          const server = await device.gatt.connect();
-          const service = await server.getPrimaryService(HM10_SERVICE_UUID);
-          const char = await service.getCharacteristic(HM10_CHAR_UUID);
-          await char.startNotifications();
-          char.addEventListener('characteristicvaluechanged', (e) => {
-            const val = new Uint8Array(e.target.value.buffer);
-            handleIncomingData(val);
-          });
-          connectedDeviceId = device;
-          setConnectedState(true, device.name);
-          logSys('Conectado mediante Web Bluetooth.');
+          appMonitor.sys('Conectado y suscrito a características HM-10.');
+        } catch (err) {
+          appMonitor.sys('Fallo de conexión: ' + err.message);
+          showModal('Error de Conexión', err.message || 'No se pudo vincular el equipo.');
+        }
+      },
+
+      async disconnectDevice() {
+        try {
+          if (this.connectedDeviceId && BleClient) {
+            await BleClient.disconnect(this.connectedDeviceId);
+          }
+        } catch (err) {
+          appMonitor.sys('Error al desconectar: ' + err.message);
+        } finally {
+          this.handleDisconnect();
+        }
+      },
+
+      handleDisconnect() {
+        this.isConnected = false;
+        this.connectedDeviceId = null;
+        this.updateUiState(false);
+        appMonitor.sys('Dispositivo desconectado.');
+      },
+
+      updateUiState(connected, devName = '') {
+        const badge = document.getElementById('connStatusBadge');
+        const btnConn = document.getElementById('btnConnect');
+        const btnDis = document.getElementById('btnDisconnect');
+        const info = document.getElementById('bleDeviceInfo');
+
+        if (connected) {
+          badge.className = 'badge-status status-connected';
+          badge.innerText = 'Conectado';
+          btnConn.disabled = true;
+          btnDis.disabled = false;
+          info.innerText = `Dispositivo Conectado: ${devName}\nUUID Servicio: Oculto\nUUID Característica: Oculto`;
         } else {
-          throw new Error('Plugin Capacitor BLE ni Web Bluetooth disponibles.');
+          badge.className = 'badge-status status-disconnected';
+          badge.innerText = 'Desconectado';
+          btnConn.disabled = false;
+          btnDis.disabled = true;
+          info.innerText = 'Estado: Desconectado. Listo para conectar.';
         }
-      } catch (err) {
-        logSys('Error al conectar: ' + err.message);
-        showModal('Error de Conexión', err.message, true);
-      }
-    });
+      },
 
-    // Desconectar BLE
-    btnDisconnect.addEventListener('click', async () => {
-      try {
-        if (BleClient && connectedDeviceId) {
-          await BleClient.disconnect(connectedDeviceId);
-        } else if (connectedDeviceId && connectedDeviceId.gatt) {
-          connectedDeviceId.gatt.disconnect();
+      async sendCommand(cmdByte, payloadBytes = []) {
+        if (!this.isConnected && BleClient) {
+          showModal('Advertencia', 'Debe conectar el dispositivo antes de operar.');
+          throw new Error('No conectado');
         }
-      } catch (err) {
-        console.error(err);
-      }
-      onDisconnected(connectedDeviceId);
-    });
 
-    function onDisconnected(id) {
-      setConnectedState(false);
-      logSys('Dispositivo desconectado.');
-      showModal('Desconexión', 'El caudalímetro se ha desconectado.');
-    }
+        const packet = new Uint8Array([cmdByte, ...payloadBytes]);
+        appMonitor.log('TX', packet);
 
-    function setConnectedState(connected, name = '') {
-      isConnected = connected;
-      if (connected) {
-        badgeStatus.textContent = 'Conectado';
-        badgeStatus.classList.add('connected');
-        btnConnect.disabled = true;
-        btnDisconnect.disabled = false;
-        deviceDetails.textContent = `Dispositivo: ${name}\nID: ${connectedDeviceId}\nHM-10 Service: OK`;
-      } else {
-        badgeStatus.textContent = 'Desconectado';
-        badgeStatus.classList.remove('connected');
-        btnConnect.disabled = false;
-        btnDisconnect.disabled = true;
-        connectedDeviceId = null;
-        deviceDetails.textContent = 'Sin dispositivo seleccionado.';
-      }
-    }
-
-    /* --- TRANSMISIÓN Y RECEPCIÓN --- */
-    async function sendData(bytes) {
-      if (!isConnected) {
-        showModal('Sin Conexión', 'Debe conectar con el dispositivo primero.', true);
-        return false;
-      }
-      try {
-        const payload = new Uint8Array(bytes);
-        if (BleClient && connectedDeviceId) {
-          const dataView = new DataView(payload.buffer);
-          await BleClient.write(connectedDeviceId, HM10_SERVICE_UUID, HM10_CHAR_UUID, dataView);
+        if (BleClient && this.connectedDeviceId) {
+          const dataView = new DataView(packet.buffer);
+          await BleClient.write(this.connectedDeviceId, HM10_SERVICE, HM10_CHAR, dataView);
+        } else {
+          appMonitor.sys('Simulación de envío: Comando ' + cmdByte.toString(16).toUpperCase());
         }
-        logTx(payload);
-        return true;
-      } catch (e) {
-        logSys('Error al transmitir: ' + e.message);
-        return false;
-      }
-    }
+      },
 
-    function handleIncomingData(uint8) {
-      logRx(uint8);
-
-      // Si está en curso la descarga de la memoria de datos (0x30)
-      if (isDownloading) {
-        for (let i = 0; i < uint8.length; i++) {
-          downloadedBuffer.push(uint8[i]);
+      onDataReceived(uint8) {
+        for (let b of uint8) {
+          this.rxBuffer.push(b);
         }
-        const regs = Math.floor(downloadedBuffer.length / 10);
-        dataMemCounter.textContent = `Bytes: ${downloadedBuffer.length} (~${regs} reg)`;
+        if (this.activeListener) {
+          this.activeListener(uint8);
+        }
+      }
+    };
+
+    /* ==========================================================================
+       TAB 2: BASE DE DATOS Y EXPORTACIÓN CSV
+       ========================================================================== */
+    const appData = {
+      records: [],
+      isDownloading: false,
+
+      async downloadMemory() {
+        if (this.isDownloading) return;
+        this.isDownloading = true;
+        this.records = [];
         
-        // Reiniciar timer de detección de fin de flujo de datos
-        clearTimeout(downloadTimer);
-        downloadTimer = setTimeout(finishDownloadMemory, 1200);
-        return;
-      }
+        const startTime = performance.now();
+        let totalBytes = 0;
+        let accumulator = [];
 
-      // Si hay un comando puntual esperando respuesta
-      if (activeCommand !== null) {
-        for (let i = 0; i < uint8.length; i++) {
-          commandResponseBuffer.push(uint8[i]);
+        appMonitor.sys('Descargando memoria de datos (0x30)...');
+
+        // Escuchador temporal para acumular el stream
+        const listener = (chunk) => {
+          totalBytes += chunk.length;
+          for (let b of chunk) accumulator.push(b);
+        };
+        appBle.activeListener = listener;
+
+        try {
+          await appBle.sendCommand(0x30);
+
+          // Espera adaptativa de recepción
+          await new Promise(r => setTimeout(r, 2500));
+
+          // Descartar eco inicial de 0x30 si existe
+          if (accumulator.length > 0 && accumulator[0] === 0x30) {
+            accumulator.shift();
+          }
+
+          // Procesar paquetes de 10 bytes
+          let rowId = 1;
+          for (let i = 0; i + 10 <= accumulator.length; i += 10) {
+            const raw = accumulator.slice(i, i + 10);
+            
+            // Estructura: 3 bytes fecha, 3 bytes hora, 4 bytes litros
+            const fecha = `20${String(raw[0]).padStart(2,'0')}-${String(raw[1]).padStart(2,'0')}-${String(raw[2]).padStart(2,'0')}`;
+            const hora = `${String(raw[3]).padStart(2,'0')}:${String(raw[4]).padStart(2,'0')}:${String(raw[5]).padStart(2,'0')}`;
+            
+            // Litros: 4 bytes entero, corregir 2 decimales a la izquierda
+            const litrosInt = (raw[6] << 24) | (raw[7] << 16) | (raw[8] << 8) | raw[9];
+            const litros = (litrosInt / 100.0).toFixed(2);
+
+            this.records.push({ id: rowId++, fecha, hora, litros });
+          }
+
+          const elapsedSec = ((performance.now() - startTime) / 1000).toFixed(2);
+          this.renderTable();
+          document.getElementById('btnExportCsv').disabled = this.records.length === 0;
+
+          showModal(
+            'Descarga Finalizada',
+            `<p><strong>Tiempo:</strong> ${elapsedSec} seg</p>
+             <p><strong>Bytes recibidos:</strong> ${totalBytes}</p>
+             <p><strong>Registros válidos:</strong> ${this.records.length}</p>`
+          );
+        } catch (e) {
+          appMonitor.sys('Error en descarga: ' + e.message);
+        } finally {
+          this.isDownloading = false;
+          appBle.activeListener = null;
         }
-        if (commandResponseBuffer.length >= expectedBytes) {
-          clearTimeout(commandTimeout);
-          resolveActiveCommand();
-        }
-      }
-    }
+      },
 
-    /* --- GESTOR DE COMANDOS SOLICITUD/RESPUESTA --- */
-    function sendCommandRequest(cmdByte, payload = [], expectedLen = 0, timeoutMs = 4000) {
-      return new Promise(async (resolve, reject) => {
-        if (!isConnected) {
-          showModal('Error', 'Dispositivo no conectado', true);
-          return reject('No conectado');
+      renderTable() {
+        const tbody = document.querySelector('#tblRecords tbody');
+        document.getElementById('lblRecordCount').innerText = this.records.length;
+
+        if (this.records.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:rgba(255,255,255,0.5);">Sin registros descargados</td></tr>`;
+          return;
         }
 
-        activeCommand = cmdByte;
-        commandResponseBuffer = [];
-        expectedBytes = expectedLen;
+        tbody.innerHTML = this.records.map(r => `
+          <tr>
+            <td>${r.id}</td>
+            <td>${r.fecha}</td>
+            <td>${r.hora}</td>
+            <td>${r.litros} L</td>
+          </tr>
+        `).join('');
+      },
 
-        const packet = [cmdByte, ...payload];
-        const ok = await sendData(packet);
-        if (!ok) {
-          activeCommand = null;
-          return reject('Fallo al enviar');
-        }
+      exportCsv() {
+        if (this.records.length === 0) return;
 
-        // Si no espera bytes de respuesta
-        if (expectedLen === 0) {
-          activeCommand = null;
-          return resolve([]);
-        }
-
-        commandTimeout = setTimeout(() => {
-          activeCommand = null;
-          resolve(commandResponseBuffer); // Retorna lo recibido hasta timeout
-        }, timeoutMs);
-
-        window._resolveCurrentCmd = resolve;
-      });
-    }
-
-    function resolveActiveCommand() {
-      const data = [...commandResponseBuffer];
-      activeCommand = null;
-      if (window._resolveCurrentCmd) {
-        window._resolveCurrentCmd(data);
-        window._resolveCurrentCmd = null;
-      }
-    }
-
-    /* =========================================================
-       TAB 2: BASE DE DATOS Y GENERACIÓN DE CSV
-       ========================================================= */
-    document.getElementById('btnDownloadDataMem').addEventListener('click', async () => {
-      if (!isConnected) return showModal('Atención', 'Conéctese al caudalímetro primero.', true);
-      
-      downloadedBuffer = [];
-      isDownloading = true;
-      downloadStartTime = Date.now();
-      dataMemCounter.textContent = 'Iniciando descarga...';
-      
-      await sendData([CMD.DOWNLOAD_DATA_MEM]);
-
-      // Timer en caso de no recibir bytes de respuesta
-      clearTimeout(downloadTimer);
-      downloadTimer = setTimeout(finishDownloadMemory, 2500);
-    });
-
-    function finishDownloadMemory() {
-      isDownloading = false;
-      clearTimeout(downloadTimer);
-      const elapsedSec = ((Date.now() - downloadStartTime) / 1000).toFixed(1);
-      const totalBytes = downloadedBuffer.length;
-      const totalRegs = Math.floor(totalBytes / 10);
-      
-      dataMemCounter.textContent = `Bytes: ${totalBytes} (~${totalRegs} reg)`;
-      
-      if (totalBytes > 0) {
-        btnExportCSV.disabled = false;
-      }
-
-      showModal(
-        'Descarga Finalizada',
-        `Proceso completado con éxito.\nTiempo transcurrido: ${elapsedSec} s\nTotal descargado: ${totalBytes} Bytes (~${totalRegs} registros)`
-      );
-    }
-
-    document.getElementById('btnExportCSV').addEventListener('click', () => {
-      if (downloadedBuffer.length === 0) {
-        showModal('Error', 'No hay datos descargados para exportar.', true);
-        return;
-      }
-      exportBufferToCSV(downloadedBuffer);
-    });
-
-    function exportBufferToCSV(buffer) {
-      const rows = [['ID', 'FECHA', 'HORA', 'LITROS']];
-      const packetSize = 10;
-      let recordId = 1;
-
-      for (let i = 0; i + packetSize <= buffer.length; i += packetSize) {
-        const slice = buffer.slice(i, i + packetSize);
-        
-        // 3 primeros bytes: Fecha (Día, Mes, Año)
-        const b0 = slice[0], b1 = slice[1], b2 = slice[2];
-        const fecha = `${pad2(b0)}/${pad2(b1)}/20${pad2(b2)}`;
-
-        // Próximos 3 bytes: Hora (Hora, Minuto, Segundo)
-        const b3 = slice[3], b4 = slice[4], b5 = slice[5];
-        const hora = `${pad2(b3)}:${pad2(b4)}:${pad2(b5)}`;
-
-        // 4 últimos bytes: Litros (Entero convertido a decimal con 2 dígitos)
-        // Big-endian / Little-endian (Interpretado como entero de 32 bits sin signo)
-        const rawLiters = (slice[6] << 24) | (slice[7] << 16) | (slice[8] << 8) | slice[9];
-        const litros = (rawLiters / 100).toFixed(2);
-
-        rows.push([recordId, fecha, hora, litros]);
-        recordId++;
-      }
-
-      // Convertir a string CSV
-      const csvContent = rows.map(r => r.join(',')).join('\r\n');
-      
-      // Formato Nombre: "FlowSync_data_" + fecha + "_" + hora completa
-      const now = new Date();
-      const dateStr = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
-      const timeStr = `${pad2(now.getHours())}-${pad2(now.getMinutes())}-${pad2(now.getSeconds())}`;
-      const fileName = `FlowSync_data_${dateStr}_${timeStr}.csv`;
-
-      // Crear archivo Blob y forzar descarga local
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      showModal('Exportación Exitosa', `Archivo generado:\n${fileName}\nFilas procesadas: ${rows.length - 1}`);
-    }
-
-    /* =========================================================
-       TAB 3: COMPROBANTES DE DESPACHO
-       ========================================================= */
-    document.getElementById('btnPrintLast').addEventListener('click', async () => {
-      await sendCommandRequest(CMD.PRINT_LAST, [], 0);
-      showModal('Impresión Solicitada', 'Comando de impresión de último despacho (0x35) enviado.');
-    });
-
-    document.getElementById('btnPrintCurrent').addEventListener('click', async () => {
-      await sendCommandRequest(CMD.PRINT_CURR, [], 0);
-      showModal('Impresión Solicitada', 'Comando de impresión de despacho actual (0x37) enviado.');
-    });
-
-    /* =========================================================
-       TAB 4: OPCIONES ESPECIALES
-       ========================================================= */
-
-    // 1° Bloque: Calendario (0x38 leer / 0x39 configurar)
-    document.getElementById('btnReadCal').addEventListener('click', async () => {
-      const res = await sendCommandRequest(CMD.READ_CALENDAR, [], 6);
-      if (res.length >= 6) {
-        // Asumiendo formato de 6 bytes: [Día, Mes, Año, Hora, Minuto, Segundo]
-        const d = res[0], m = res[1], y = res[2], h = res[3], min = res[4], s = res[5];
-        const dateStr = `20${pad2(y)}-${pad2(m)}-${pad2(d)}T${pad2(h)}:${pad2(min)}`;
-        document.getElementById('calendarInput').value = dateStr;
-        showModal('Lectura de Calendario', `Fecha: ${pad2(d)}/${pad2(m)}/20${pad2(y)}\nHora: ${pad2(h)}:${pad2(min)}:${pad2(s)}\nHex: ${bytesToHex(res.slice(0, 6))}`);
-      } else {
-        showModal('Resultado Calendario', `Bytes leídos: ${res.length}\nHex: ${bytesToHex(res)}`);
-      }
-    });
-
-    document.getElementById('btnWriteCal').addEventListener('click', async () => {
-      const val = document.getElementById('calendarInput').value;
-      if (!val) return showModal('Aviso', 'Seleccione fecha y hora.', true);
-      const d = new Date(val);
-      // Armar 6 bytes: Día, Mes, Año (2 dígitos), Hora, Minuto, Segundo
-      const calBytes = [
-        d.getDate(),
-        d.getMonth() + 1,
-        d.getFullYear() % 100,
-        d.getHours(),
-        d.getMinutes(),
-        d.getSeconds()
-      ];
-      await sendCommandRequest(CMD.WRITE_CALENDAR, calBytes, 6);
-      showModal('Configuración de Calendario', `Calendario configurado con éxito.\nDatos: ${bytesToHex(calBytes)}`);
-    });
-
-    // 1° Bloque: Ticket 52 Bytes (0x3B leer / 0x3C configurar)
-    document.getElementById('btnReadTicket').addEventListener('click', async () => {
-      const res = await sendCommandRequest(CMD.READ_TICKET, [], 52);
-      if (res.length > 0) {
-        // Decodificar bytes ascii imprimibles
-        let txt = '';
-        res.forEach(b => {
-          if (b >= 32 && b <= 126) txt += String.fromCharCode(b);
+        let csvContent = "ID,FECHA,HORA,LITROS\r\n";
+        this.records.forEach(r => {
+          csvContent += `${r.id},${r.fecha},${r.hora},${r.litros}\r\n`;
         });
-        document.getElementById('ticketInput').value = txt;
-        showModal('Datos de Ticket Leídos', `Bytes recibidos: ${res.length}\nHex: ${bytesToHex(res.slice(0, 16))}...`);
-      } else {
-        showModal('Lectura Ticket', 'No se recibieron datos del ticket.', true);
+
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0];
+        const timeStr = `${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}-${String(now.getSeconds()).padStart(2,'0')}`;
+        const fileName = `FlowSync_data_${dateStr}_${timeStr}.csv`;
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showModal('Exportación Exitosa', `Archivo generado:<br><strong>${fileName}</strong>`);
       }
-    });
+    };
 
-    document.getElementById('btnWriteTicket').addEventListener('click', async () => {
-      const text = document.getElementById('ticketInput').value || '';
-      const payload = new Array(52).fill(0x20); // rellenar con espacios 0x20
-      for (let i = 0; i < text.length && i < 52; i++) {
-        payload[i] = text.charCodeAt(i);
+    /* ==========================================================================
+       TAB 3: COMPROBANTE / IMPRESIÓN
+       ========================================================================== */
+    const appTicket = {
+      async printFinished() {
+        try {
+          await appBle.sendCommand(0x35);
+          showModal('Comprobante', 'Orden de impresión enviada:<br><strong>Despacho Finalizado (0x35)</strong>');
+        } catch (e) {
+          appMonitor.sys('Fallo al imprimir finalizado: ' + e.message);
+        }
+      },
+
+      async printCurrent() {
+        try {
+          await appBle.sendCommand(0x37);
+          showModal('Comprobante', 'Orden de impresión enviada:<br><strong>Despacho Actual (0x37)</strong>');
+        } catch (e) {
+          appMonitor.sys('Fallo al imprimir actual: ' + e.message);
+        }
       }
-      await sendCommandRequest(CMD.WRITE_TICKET, payload, 52);
-      showModal('Guardar Ticket', `Configuración de ticket guardada (52 Bytes transmitidos).\nHex: ${bytesToHex(payload.slice(0, 16))}...`);
-    });
+    };
 
-    // 2° Bloque: Base de Datos (Sistema y Borrado con Doble Confirmación)
-    document.getElementById('btnReadSysMem').addEventListener('click', async () => {
-      const res = await sendCommandRequest(CMD.READ_SYS_MEM, [], 64);
-      showModal('Memoria de Sistema (0x31)', `Leídos: ${res.length} Bytes\n\nHex:\n${bytesToHex(res)}`);
-    });
+    /* ==========================================================================
+       TAB 4: OPCIONES ESPECIALES (CONFIGURACIÓN, MEMORIA, INFORMACIÓN)
+       ========================================================================== */
+    const appSpecial = {
+      // 1° Bloque: Calendario
+      async readCalendar() {
+        let buffer = [];
+        appBle.activeListener = (c) => buffer.push(...c);
+        try {
+          await appBle.sendCommand(0x38);
+          await new Promise(r => setTimeout(r, 600));
 
-    document.getElementById('btnEraseDataMem').addEventListener('click', async () => {
-      const step1 = await showConfirmModal('Borrar Memoria de Datos (0x32)', '¿Está seguro de que desea borrar todos los registros de datos?', true);
-      if (!step1) return;
-      const step2 = await showConfirmModal('Doble Confirmación', '¡Atención! Esta acción no se puede deshacer. ¿Confirma el borrado DEFINITIVO?', true);
-      if (!step2) return;
+          if (buffer[0] === 0x38) buffer.shift();
+          const d = buffer.slice(0, 6);
+          const str = d.length >= 6 
+            ? `20${d[0]}/${d[1]}/${d[2]} ${d[3]}:${d[4]}:${d[5]}`
+            : 'Sin datos válidos';
 
-      await sendCommandRequest(CMD.ERASE_DATA_MEM, [], 0);
-      downloadedBuffer = [];
-      dataMemCounter.textContent = 'Bytes: 0 (~0 reg)';
-      btnExportCSV.disabled = true;
-      showModal('Borrado Completado', 'Se ha enviado el comando de borrado del sector de datos (0x32).');
-    });
+          document.getElementById('dispCalendar').innerText = 'Fecha/Hora Micro: ' + str;
+          showModal('Lectura de Calendario', `Fecha y hora actual leída:<br><strong>${str}</strong>`);
+        } finally {
+          appBle.activeListener = null;
+        }
+      },
 
-    document.getElementById('btnEraseSysMem').addEventListener('click', async () => {
-      const step1 = await showConfirmModal('Borrar Memoria de Sistema (0x33)', '¿Está seguro de borrar la memoria del sistema?', true);
-      if (!step1) return;
-      const step2 = await showConfirmModal('Confirmación Crítica', '¿Realmente desea formatear y borrar el sector del sistema?', true);
-      if (!step2) return;
+      async writeCalendar() {
+        const val = document.getElementById('cfgDateTimeInput').value;
+        if (!val) {
+          showModal('Advertencia', 'Seleccione fecha y hora para transferir.');
+          return;
+        }
+        const dt = new Date(val);
+        const bytes = [
+          dt.getFullYear() % 100,
+          dt.getMonth() + 1,
+          dt.getDate(),
+          dt.getHours(),
+          dt.getMinutes(),
+          dt.getSeconds()
+        ];
+        await appBle.sendCommand(0x39, bytes);
+        showModal('Configuración de Calendario', 'Calendario sincronizado con éxito (0x39).');
+      },
 
-      await sendCommandRequest(CMD.ERASE_SYS_MEM, [], 0);
-      showModal('Borrado Completado', 'Se ha enviado el comando de borrado del sector de sistema (0x33).');
-    });
+      // 1° Bloque: Ticket
+      async readTicketConfig() {
+        let buffer = [];
+        appBle.activeListener = (c) => buffer.push(...c);
+        try {
+          await appBle.sendCommand(0x3B);
+          await new Promise(r => setTimeout(r, 800));
 
-    // 3° Bloque: Información de Despachos
-    document.getElementById('btnReadLastRecord').addEventListener('click', async () => {
-      const res = await sendCommandRequest(CMD.READ_LAST_REC, [], 10);
-      showRecordModal('Último Despacho Guardado (0x34)', res);
-    });
+          if (buffer[0] === 0x3B) buffer.shift();
+          const data = buffer.slice(0, 52);
+          const text = new TextDecoder().decode(new Uint8Array(data));
 
-    document.getElementById('btnReadCurrentRecord').addEventListener('click', async () => {
-      const res = await sendCommandRequest(CMD.READ_CURR_REC, [], 10);
-      showRecordModal('Despacho Actual No Guardado (0x36)', res);
-    });
+          document.getElementById('dispTicketConfig').innerText = text || '--';
+          showModal('Lectura de Ticket', `Configuración recuperada (52 bytes).`);
+        } finally {
+          appBle.activeListener = null;
+        }
+      },
 
-    function showRecordModal(title, bytes) {
-      if (bytes.length >= 10) {
-        const f = `${pad2(bytes[0])}/${pad2(bytes[1])}/20${pad2(bytes[2])}`;
-        const h = `${pad2(bytes[3])}:${pad2(bytes[4])}:${pad2(bytes[5])}`;
-        const rawL = (bytes[6] << 24) | (bytes[7] << 16) | (bytes[8] << 8) | bytes[9];
-        const liters = (rawL / 100).toFixed(2);
-        showModal(title, `Fecha: ${f}\nHora: ${h}\nLitros: ${liters} L\n\nHex:\n${bytesToHex(bytes.slice(0, 10))}`);
-      } else {
-        showModal(title, `Bytes recibidos: ${bytes.length}\nHex:\n${bytesToHex(bytes)}`);
+      async writeTicketConfig() {
+        const text = document.getElementById('cfgTicketInput').value || '';
+        const encoder = new TextEncoder();
+        let bytes = Array.from(encoder.encode(text));
+        while (bytes.length < 52) bytes.push(0x20); // rellenar con espacios
+        bytes = bytes.slice(0, 52);
+
+        await appBle.sendCommand(0x3C, bytes);
+        showModal('Configuración de Ticket', 'Datos de ticket guardados exitosamente (52 bytes).');
+      },
+
+      // 2° Bloque: Base de datos / Memoria
+      async readSystemMemory() {
+        let buffer = [];
+        appBle.activeListener = (c) => buffer.push(...c);
+        try {
+          await appBle.sendCommand(0x31);
+          await new Promise(r => setTimeout(r, 1000));
+
+          if (buffer[0] === 0x31) buffer.shift();
+          const raw = buffer.slice(0, 64);
+          const hex = raw.map(b => b.toString(16).padStart(2,'0').toUpperCase()).join(' ');
+
+          document.getElementById('dispSysMem').innerText = hex || 'Sin respuesta';
+          showModal('Memoria de Sistema', `64 Bytes leídos con éxito.`);
+        } finally {
+          appBle.activeListener = null;
+        }
+      },
+
+      promptErase(type) {
+        const targetText = type === 'sys' ? 'sector de sistema (0x33)' : 'sector de datos (0x32)';
+        
+        // Primera confirmación
+        this.openConfirmModal(
+          'Confirmación Requerida',
+          `¿Está completamente seguro de borrar la memoria <strong>${targetText}</strong>?`,
+          () => {
+            // Segunda confirmación (Doble confirmación)
+            setTimeout(() => {
+              this.openConfirmModal(
+                '¡ADVERTENCIA CRÍTICA!',
+                `Esta acción es <strong>IRREVERSIBLE</strong>.<br>¿Reconfirmar eliminación definitiva de ${targetText}?`,
+                async () => {
+                  const cmd = type === 'sys' ? 0x33 : 0x32;
+                  await appBle.sendCommand(cmd);
+                  showModal('Borrado Completo', `Operación de borrado efectuada correctamente.`);
+                }
+              );
+            }, 250);
+          }
+        );
+      },
+
+      openConfirmModal(title, textHtml, onConfirm) {
+        document.getElementById('confirmModalTitle').innerText = title;
+        document.getElementById('confirmModalBody').innerHTML = textHtml;
+        const btn = document.getElementById('btnConfirmProceed');
+        btn.onclick = () => {
+          closeModal('confirmModal');
+          onConfirm();
+        };
+        document.getElementById('confirmModal').classList.add('active');
+      },
+
+      // 3° Bloque: Información
+      parseRecord10(buffer) {
+        if (buffer.length < 10) return 'Datos insuficientes.';
+        const fecha = `20${String(buffer[0]).padStart(2,'0')}/${String(buffer[1]).padStart(2,'0')}/${String(buffer[2]).padStart(2,'0')}`;
+        const hora = `${String(buffer[3]).padStart(2,'0')}:${String(buffer[4]).padStart(2,'0')}:${String(buffer[5]).padStart(2,'0')}`;
+        const litrosInt = (buffer[6] << 24) | (buffer[7] << 16) | (buffer[8] << 8) | buffer[9];
+        const litros = (litrosInt / 100.0).toFixed(2);
+        return `Fecha: ${fecha}\nHora: ${hora}\nLitros: ${litros} L`;
+      },
+
+      async readLastFinished() {
+        let buffer = [];
+        appBle.activeListener = (c) => buffer.push(...c);
+        try {
+          await appBle.sendCommand(0x34);
+          await new Promise(r => setTimeout(r, 600));
+
+          if (buffer[0] === 0x34) buffer.shift();
+          const info = this.parseRecord10(buffer.slice(0, 10));
+          document.getElementById('dispLastRecord').innerText = info;
+          showModal('Último Despacho Guardado', `<pre style="font-family:monospace">${info}</pre>`);
+        } finally {
+          appBle.activeListener = null;
+        }
+      },
+
+      async readCurrentUnsaved() {
+        let buffer = [];
+        appBle.activeListener = (c) => buffer.push(...c);
+        try {
+          await appBle.sendCommand(0x36);
+          await new Promise(r => setTimeout(r, 600));
+
+          if (buffer[0] === 0x36) buffer.shift();
+          const info = this.parseRecord10(buffer.slice(0, 10));
+          document.getElementById('dispCurrRecord').innerText = info;
+          showModal('Despacho Actual', `<pre style="font-family:monospace">${info}</pre>`);
+        } finally {
+          appBle.activeListener = null;
+        }
+      },
+
+      async readTotalDispatches() {
+        let buffer = [];
+        appBle.activeListener = (c) => buffer.push(...c);
+        try {
+          await appBle.sendCommand(0x3A);
+          await new Promise(r => setTimeout(r, 600));
+
+          if (buffer[0] === 0x3A) buffer.shift();
+          const raw = buffer.slice(0, 4);
+          let count = 0;
+          if (raw.length >= 4) {
+            count = (raw[0] << 24) | (raw[1] << 16) | (raw[2] << 8) | raw[3];
+          }
+          document.getElementById('dispDispatchCount').innerText = `${count} despachos`;
+          showModal('Cantidad de Despachos', `Total registrados en memoria: <strong>${count}</strong>`);
+        } finally {
+          appBle.activeListener = null;
+        }
       }
-    }
+    };
 
-    document.getElementById('btnReadDispatchCount').addEventListener('click', async () => {
-      const res = await sendCommandRequest(CMD.READ_COUNT, [], 4);
-      if (res.length >= 4) {
-        const count = (res[0] << 24) | (res[1] << 16) | (res[2] << 8) | res[3];
-        showModal('Cantidad de Despachos (0x3A)', `Despachos registrados: ${count}\nHex: ${bytesToHex(res.slice(0, 4))}`);
-      } else {
-        showModal('Cantidad de Despachos', `Bytes recibidos: ${res.length}\nHex: ${bytesToHex(res)}`);
-      }
+    // Inicialización al cargar la ventana
+    window.addEventListener('DOMContentLoaded', () => {
+      appBle.init();
+      // Precargar fecha actual en el selector
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      document.getElementById('cfgDateTimeInput').value = now.toISOString().slice(0,16);
     });
-
   </script>
 </body>
 </html>
