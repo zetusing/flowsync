@@ -35,8 +35,8 @@
       font-family: var(--font-family);
       background-color: var(--bg-principal);
       color: var(--blanco);
-      height: 100vh;  /* Soporte para navegadores viejos */
-      height: 100dvh; /* Se adapta dinámicamente al tamaño real en el celular */
+      height: 100vh;
+      height: 100dvh; /* Se adapta dinámicamente a la pantalla del celular */
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -98,7 +98,7 @@
     }
 
     /* ==========================================================================
-       CONTENIDO PRINCIPAL & TABS
+       CONTENIDO PRINCIPAL & PANTALLAS (TABS)
        ========================================================================== */
     main {
       flex: 1;
@@ -322,7 +322,7 @@
     }
 
     /* ==========================================================================
-       TAB 4: OPCIONES ESPECIALES
+       TAB 4: OPCIONES ESPECIALES (DISPLAYS PROPIOS)
        ========================================================================== */
     .data-display-box {
       background: rgba(0, 0, 0, 0.3);
@@ -369,7 +369,7 @@
     .log-time { color: #777; }
 
     /* ==========================================================================
-       BARRA DE NAVEGACIÓN INFERIOR
+       BARRA DE NAVEGACIÓN INFERIOR (CON SOPORTE SAFE AREA)
        ========================================================================== */
     nav.bottom-nav {
       background-color: var(--azul-petroleo);
@@ -688,7 +688,7 @@
         connectStartTime: 0,
         isSimulated: false,
 
-        // Filtro estricto por comando activo
+        // Control de tramas activas y buffers
         activeCmd: null,
         streamBuffer: [],
         downloadStartTime: 0,
@@ -758,7 +758,7 @@
       });
 
       // ==========================================================================
-      // MODALES
+      // VENTANAS EMERGENTES (MODALES)
       // ==========================================================================
       function showModal(title, message, buttons = null) {
         dom.modalTitle.textContent = title;
@@ -825,15 +825,15 @@
       });
 
       // ==========================================================================
-      // DETECCIÓN DE REGISTROS VACÍOS EN MEMORIA
+      // DETECCIÓN DE DATOS VACÍOS EN MEMORIA
       // ==========================================================================
       function isRecordEmpty(b10) {
-        // Memoria virgen / borrada en Flash suele ser 0xFF o 0x00
+        // En memorias Flash borradas, los bytes quedan en 0xFF o en 0x00
         const allFF = b10.every(x => x === 0xFF);
         const all00 = b10.every(x => x === 0x00);
         if (allFF || all00) return true;
 
-        // Validación de fecha: Día o Mes en 0 o 255 (0xFF)
+        // Comprobación de fecha válida (Día o Mes 0 o 0xFF)
         const dd = b10[0];
         const mm = b10[1];
         if (dd === 0 || dd === 0xFF || dd > 31) return true;
@@ -843,13 +843,14 @@
       }
 
       // ==========================================================================
-      // CONECTIVIDAD BLE (CAPACITOR + WEB BLE + SIMULADOR)
+      // CONECTIVIDAD BLE (CAPACITOR + BLUEFY / WEBBLE / CHROME + SIMULADOR)
       // ==========================================================================
       async function connectBLE() {
         state.connectStartTime = performance.now();
         state.isSimulated = false;
 
         try {
+          // 1. Entorno Nativo Capacitor
           if (window.Capacitor?.Plugins?.BleClient) {
             const Ble = window.Capacitor.Plugins.BleClient;
             await Ble.initialize();
@@ -860,13 +861,18 @@
 
             await Ble.startNotifications(
               { deviceId: state.deviceId, service: HM10_SERVICE_UUID, characteristic: HM10_CHAR_UUID },
-              (data) => handleIncomingChunk(new Uint8Array(data.buffer))
+              (data) => {
+                const raw = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+                handleIncomingChunk(raw);
+              }
             );
 
             setConnectedState(true);
             const elapsed = ((performance.now() - state.connectStartTime) / 1000).toFixed(1);
             showModal('CONEXIÓN EXITOSA', `Dispositivo enlazado correctamente.<br/>Tiempo: ${elapsed}s`);
-          } else if (navigator.bluetooth) {
+          } 
+          // 2. Entorno Web Bluetooth: BLUEFY (iOS) / WebBLE / Google Chrome
+          else if (navigator.bluetooth) {
             const device = await navigator.bluetooth.requestDevice({
               acceptAllDevices: true,
               optionalServices: [HM10_SERVICE_UUID]
@@ -884,10 +890,16 @@
             const service = await server.getPrimaryService(HM10_SERVICE_UUID);
             window._hm10Char = await service.getCharacteristic(HM10_CHAR_UUID);
 
-            await window._hm10Char.startNotifications();
-            window._hm10Char.addEventListener('characteristicvaluechanged', (e) => {
-              handleIncomingChunk(new Uint8Array(e.target.value.buffer));
+            // IMPORTANTE EN BLUEFY (iOS): Registrar listener antes de llamar a startNotifications
+            window._hm10Char.addEventListener('characteristicvaluechanged', (event) => {
+              const dv = event.target.value;
+              if (!dv || dv.byteLength === 0) return;
+              // Extracción segura respetando offset en iOS
+              const chunk = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
+              handleIncomingChunk(chunk);
             });
+
+            await window._hm10Char.startNotifications();
 
             setConnectedState(true);
             const elapsed = ((performance.now() - state.connectStartTime) / 1000).toFixed(1);
@@ -896,8 +908,10 @@
             triggerSimulator();
           }
         } catch (err) {
-          console.warn('Iniciando simulador tras cancelación o falta de hardware:', err);
-          triggerSimulator();
+          console.warn('Iniciando simulador tras cancelación o error:', err);
+          if (err.name !== 'NotFoundError') {
+            triggerSimulator();
+          }
         }
       }
 
@@ -908,7 +922,7 @@
           setConnectedState(true);
           const elapsed = ((performance.now() - state.connectStartTime) / 1000).toFixed(1);
           showModal('CONEXIÓN EXITOSA', `Dispositivo enlazado correctamente.<br/>Tiempo: ${elapsed}s`);
-        }, 1000);
+        }, 800);
       }
 
       async function disconnectBLE() {
@@ -969,7 +983,6 @@
           return false;
         }
 
-        // Definir comando activo y limpiar buffers
         state.activeCmd = paramByte;
         state.streamBuffer = [];
         clearTimeout(state.streamTimer);
@@ -994,17 +1007,17 @@
               value: new DataView(packet.buffer)
             });
           } else if (window._hm10Char) {
-            // Fragmentación de salida a 20 bytes (MTU BLE)
             const CHUNK_SIZE = 20;
             for (let i = 0; i < packet.length; i += CHUNK_SIZE) {
               const chunk = packet.slice(i, i + CHUNK_SIZE);
-              if (window._hm10Char.writeValueWithoutResponse) {
-                await window._hm10Char.writeValueWithoutResponse(chunk);
-              } else {
+              // Preferir writeValue estándar con respuesta para evitar pérdida de bytes
+              if (window._hm10Char.writeValue) {
                 await window._hm10Char.writeValue(chunk);
+              } else {
+                await window._hm10Char.writeValueWithoutResponse(chunk);
               }
               if (packet.length > CHUNK_SIZE) {
-                await new Promise(res => setTimeout(res, 25));
+                await new Promise(res => setTimeout(res, 35));
               }
             }
           } else {
@@ -1021,7 +1034,7 @@
 
       /**
        * Procesa cada fragmento recibido.
-       * Filtra estrictamente por state.activeCmd para evitar pop-ups espurios.
+       * Filtra estrictamente por state.activeCmd para eliminar pop-ups espurios.
        */
       function handleIncomingChunk(byteArray) {
         logMonitor('Rx', byteArray);
@@ -1047,7 +1060,6 @@
           while (state.streamBuffer.length >= 10) {
             const block10 = state.streamBuffer.splice(0, 10);
             
-            // Si el bloque está vacío, se detiene la descarga
             if (isRecordEmpty(block10)) {
               state.downloadStopped = true;
               state.streamBuffer = [];
@@ -1062,7 +1074,6 @@
 
           renderTable();
 
-          // Temporizador de inactividad: si no llegan más paquetes tras 600 ms, se concluye
           clearTimeout(state.streamTimer);
           state.streamTimer = setTimeout(() => {
             concludeDownload();
@@ -1129,12 +1140,12 @@
         }
 
         // ------------------------------------------------------------------------
-        // CASO 4: Comandos de respuesta directa (Filtro por state.activeCmd)
+        // CASO 4: Comandos directos (Gating por state.activeCmd)
         // ------------------------------------------------------------------------
         const cmd = byteArray[0];
         const payload = byteArray.slice(1);
 
-        // Si el paquete no coincide con lo solicitado, se descarta (evita falsos 0x3A por ':')
+        // Descartar tramas que no correspondan al comando activo
         if (state.activeCmd !== cmd) {
           return;
         }
@@ -1472,19 +1483,19 @@
               fullBuffer[0] = 0x30;
               for (let i = 0; i < validCount; i++) {
                 const offset = 1 + (i * 10);
-                fullBuffer[offset]     = 15;      // Día
+                fullBuffer[offset]     = 23;      // Día
                 fullBuffer[offset + 1] = 9;       // Mes
                 fullBuffer[offset + 2] = 26;      // Año 2026
-                fullBuffer[offset + 3] = 10 + i;  // Hora
-                fullBuffer[offset + 4] = 15;      // Minutos
-                fullBuffer[offset + 5] = 30 + i;  // Segundos
+                fullBuffer[offset + 3] = 14 + i;  // Hora
+                fullBuffer[offset + 4] = 20;      // Minutos
+                fullBuffer[offset + 5] = 10 + i;  // Segundos
                 const vol = 125050 + (i * 3420);  // 1250,50 L, etc.
                 fullBuffer[offset + 6] = (vol >> 24) & 0xFF;
                 fullBuffer[offset + 7] = (vol >> 16) & 0xFF;
                 fullBuffer[offset + 8] = (vol >> 8) & 0xFF;
                 fullBuffer[offset + 9] = vol & 0xFF;
               }
-              // Bloque 5: Vacío (0xFF)
+              // Bloque 5: Vacío (0xFF) para probar el corte automático
               const emptyOffset = 1 + (validCount * 10);
               for (let j = 0; j < 10; j++) {
                 fullBuffer[emptyOffset + j] = 0xFF;
@@ -1522,7 +1533,7 @@
             case 0x36: {
               const res = new Uint8Array(11);
               res[0] = cmd;
-              res[1] = 15; res[2] = 9; res[3] = 26;
+              res[1] = 23; res[2] = 9; res[3] = 26;
               res[4] = 16; res[5] = 40; res[6] = 25;
               const litros = cmd === 0x34 ? 745020 : 18550;
               res[7] = (litros >> 24) & 0xFF;
@@ -1538,15 +1549,15 @@
               handleIncomingChunk(new Uint8Array([cmd]));
               break;
 
-            case 0x38:
-              handleIncomingChunk(new Uint8Array([0x38, 15, 9, 26, 17, 30, 45]));
+            case 0x38: // Leer RTC con segundos
+              handleIncomingChunk(new Uint8Array([0x38, 23, 9, 26, 17, 30, 45]));
               break;
 
-            case 0x39:
+            case 0x39: // Configurar RTC
               handleIncomingChunk(new Uint8Array([0x39, ...data]));
               break;
 
-            case 0x3A:
+            case 0x3A: // Cantidad despachos (4 Bytes)
               handleIncomingChunk(new Uint8Array([0x3A, 0x00, 0x00, 0x01, 0x5E]));
               break;
 
