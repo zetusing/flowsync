@@ -36,7 +36,7 @@
       background-color: var(--bg-principal);
       color: var(--blanco);
       height: 100vh;
-      height: 100dvh; /* Se adapta dinámicamente a la pantalla del celular */
+      height: 100dvh; /* Dynamic Viewport: descuenta barras de navegación del móvil */
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -369,7 +369,7 @@
     .log-time { color: #777; }
 
     /* ==========================================================================
-       BARRA DE NAVEGACIÓN INFERIOR (CON SOPORTE SAFE AREA)
+       BARRA DE NAVEGACIÓN INFERIOR (CON PROTECCIÓN SAFE AREA)
        ========================================================================== */
     nav.bottom-nav {
       background-color: var(--azul-petroleo);
@@ -462,6 +462,7 @@
       color: #DDD;
       line-height: 1.4;
       text-align: center;
+      word-break: break-word;
     }
 
     .modal-footer {
@@ -674,6 +675,11 @@
     (() => {
       'use strict';
 
+      // ==========================================================================
+      // CONFIGURACIÓN GLOBAL & CONSTANTE DE VERSIÓN
+      // ==========================================================================
+      const APP_VERSION = 'v1.0.2';
+
       // UUIDs HM-10 Estándar
       const HM10_SERVICE_UUID = '0000ffe0-0000-1000-8000-00805f9b34fb';
       const HM10_CHAR_UUID    = '0000ffe1-0000-1000-8000-00805f9b34fb';
@@ -794,7 +800,7 @@
         showModal(
           'Información FlowSync',
           `<strong>FlowSync</strong><br/>
-           Versión: v1.0.0<br/>
+           Versión: ${APP_VERSION}<br/>
            Desarrollador: Zetus<br/>
            Contacto: <a href="mailto:consultas@zetus.com.ar" style="color:var(--teal-zetus);">consultas@zetus.com.ar</a><br/><br/>
            <em>Herramienta diseñada para configurar y sincronizar datos con caudalímetros con salida de datos.</em>`
@@ -828,12 +834,10 @@
       // DETECCIÓN DE DATOS VACÍOS EN MEMORIA
       // ==========================================================================
       function isRecordEmpty(b10) {
-        // En memorias Flash borradas, los bytes quedan en 0xFF o en 0x00
         const allFF = b10.every(x => x === 0xFF);
         const all00 = b10.every(x => x === 0x00);
         if (allFF || all00) return true;
 
-        // Comprobación de fecha válida (Día o Mes 0 o 0xFF)
         const dd = b10[0];
         const mm = b10[1];
         if (dd === 0 || dd === 0xFF || dd > 31) return true;
@@ -871,7 +875,7 @@
             const elapsed = ((performance.now() - state.connectStartTime) / 1000).toFixed(1);
             showModal('CONEXIÓN EXITOSA', `Dispositivo enlazado correctamente.<br/>Tiempo: ${elapsed}s`);
           } 
-          // 2. Entorno Web Bluetooth: BLUEFY (iOS) / WebBLE / Google Chrome
+          // 2. Entorno Web Bluetooth: BLUEFY (iOS) / WebBLE / Chrome
           else if (navigator.bluetooth) {
             const device = await navigator.bluetooth.requestDevice({
               acceptAllDevices: true,
@@ -890,11 +894,10 @@
             const service = await server.getPrimaryService(HM10_SERVICE_UUID);
             window._hm10Char = await service.getCharacteristic(HM10_CHAR_UUID);
 
-            // IMPORTANTE EN BLUEFY (iOS): Registrar listener antes de llamar a startNotifications
+            // Listener antes de startNotifications (requisito clave en iOS Bluefy)
             window._hm10Char.addEventListener('characteristicvaluechanged', (event) => {
               const dv = event.target.value;
               if (!dv || dv.byteLength === 0) return;
-              // Extracción segura respetando offset en iOS
               const chunk = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
               handleIncomingChunk(chunk);
             });
@@ -908,7 +911,7 @@
             triggerSimulator();
           }
         } catch (err) {
-          console.warn('Iniciando simulador tras cancelación o error:', err);
+          console.warn('Iniciando simulador tras cancelación o falta de hardware:', err);
           if (err.name !== 'NotFoundError') {
             triggerSimulator();
           }
@@ -975,7 +978,7 @@
       dom.btnDisconnect.addEventListener('click', disconnectBLE);
 
       // ==========================================================================
-      // TRANSMISIÓN & MANEJO DEL STREAMING BLE
+      // TRANSMISIÓN & STREAMING
       // ==========================================================================
       async function sendPacket(paramByte, dataBytes = []) {
         if (!state.connected) {
@@ -1010,7 +1013,6 @@
             const CHUNK_SIZE = 20;
             for (let i = 0; i < packet.length; i += CHUNK_SIZE) {
               const chunk = packet.slice(i, i + CHUNK_SIZE);
-              // Preferir writeValue estándar con respuesta para evitar pérdida de bytes
               if (window._hm10Char.writeValue) {
                 await window._hm10Char.writeValue(chunk);
               } else {
@@ -1032,19 +1034,13 @@
         }
       }
 
-      /**
-       * Procesa cada fragmento recibido.
-       * Filtra estrictamente por state.activeCmd para eliminar pop-ups espurios.
-       */
       function handleIncomingChunk(byteArray) {
         logMonitor('Rx', byteArray);
         if (byteArray.length === 0) return;
 
-        // ------------------------------------------------------------------------
         // CASO 1: Descarga de memoria de datos (0x30)
-        // ------------------------------------------------------------------------
         if (state.activeCmd === 0x30) {
-          if (state.downloadStopped) return; // Si ya se halló registro vacío, se descarta el resto
+          if (state.downloadStopped) return;
 
           let dataPayload = byteArray;
           if (state.downloadBytesTotal === 0 && byteArray[0] === 0x30) {
@@ -1056,10 +1052,8 @@
             state.downloadBytesTotal++;
           }
 
-          // Procesar bloques de 10 bytes hasta encontrar datos vacíos
           while (state.streamBuffer.length >= 10) {
             const block10 = state.streamBuffer.splice(0, 10);
-            
             if (isRecordEmpty(block10)) {
               state.downloadStopped = true;
               state.streamBuffer = [];
@@ -1081,9 +1075,7 @@
           return;
         }
 
-        // ------------------------------------------------------------------------
-        // CASO 2: Lectura de configuración de ticket (0x3B - 52 Bytes)
-        // ------------------------------------------------------------------------
+        // CASO 2: Lectura de ticket (0x3B - 52 Bytes)
         if (state.activeCmd === 0x3B) {
           let dataPayload = byteArray;
           if (state.streamBuffer.length === 0 && byteArray[0] === 0x3B) {
@@ -1110,9 +1102,7 @@
           return;
         }
 
-        // ------------------------------------------------------------------------
         // CASO 3: Lectura de memoria de sistema (0x31 - 64 Bytes)
-        // ------------------------------------------------------------------------
         if (state.activeCmd === 0x31) {
           let dataPayload = byteArray;
           if (state.streamBuffer.length === 0 && byteArray[0] === 0x31) {
@@ -1139,32 +1129,29 @@
           return;
         }
 
-        // ------------------------------------------------------------------------
-        // CASO 4: Comandos directos (Gating por state.activeCmd)
-        // ------------------------------------------------------------------------
+        // CASO 4: Comandos directos (Filtro por state.activeCmd)
         const cmd = byteArray[0];
         const payload = byteArray.slice(1);
 
-        // Descartar tramas que no correspondan al comando activo
         if (state.activeCmd !== cmd) {
-          return;
+          return; // Descarta caracteres espurios
         }
 
         switch (cmd) {
-          case 0x32: // Borrado de datos
+          case 0x32:
             showModal('MEMORIA BORRADA', 'El sector de memoria de datos ha sido borrado exitosamente.');
             state.records = [];
             renderTable();
             state.activeCmd = null;
             break;
 
-          case 0x33: // Borrado de sistema
+          case 0x33:
             showModal('MEMORIA BORRADA', 'El sector de memoria de sistema ha sido borrado exitosamente.');
             dom.dispSysMem.textContent = 'Memoria vacía.';
             state.activeCmd = null;
             break;
 
-          case 0x34: // Leer último registro guardado (10 Bytes)
+          case 0x34:
             {
               const rec = parseRecord(payload, 1);
               dom.dispInfo.innerHTML = `<strong>Último Despacho Guardado:</strong><br/>Fecha: ${rec.fecha} | Hora: ${rec.hora}<br/>Litros: ${rec.litros} L`;
@@ -1173,12 +1160,12 @@
             }
             break;
 
-          case 0x35: // Imprimir último registro
+          case 0x35:
             showModal('IMPRESIÓN', 'Comprobante de último despacho guardado enviado a impresora.');
             state.activeCmd = null;
             break;
 
-          case 0x36: // Leer despacho actual (10 Bytes)
+          case 0x36:
             {
               const rec = parseRecord(payload, 0);
               dom.dispInfo.innerHTML = `<strong>Despacho Actual:</strong><br/>Fecha: ${rec.fecha} | Hora: ${rec.hora}<br/>Litros: ${rec.litros} L`;
@@ -1187,12 +1174,12 @@
             }
             break;
 
-          case 0x37: // Imprimir despacho actual
+          case 0x37:
             showModal('IMPRESIÓN', 'Comprobante de despacho actual enviado a impresora.');
             state.activeCmd = null;
             break;
 
-          case 0x38: // Leer calendario actual con segundos (6 Bytes)
+          case 0x38:
             {
               const d = parseDateTime(payload);
               dom.dispCalendar.innerHTML = `Fecha: ${d.strFecha} | Hora: ${d.strHora}`;
@@ -1202,12 +1189,12 @@
             }
             break;
 
-          case 0x39: // Configurar calendario (6 Bytes)
+          case 0x39:
             showModal('CALENDARIO CONFIGURADO', 'El calendario se ha sincronizado correctamente en el equipo.');
             state.activeCmd = null;
             break;
 
-          case 0x3A: // Leer cantidad de despachos (4 Bytes)
+          case 0x3A:
             {
               let count = 0;
               if (payload.length >= 4) {
@@ -1219,7 +1206,7 @@
             }
             break;
 
-          case 0x3C: // Confirmación ticket guardado
+          case 0x3C:
             showModal('TICKET CONFIGURADO', 'Los datos del ticket han sido guardados en el microcontrolador.');
             state.activeCmd = null;
             break;
@@ -1238,7 +1225,6 @@
         );
       }
 
-      // Procesar 52 Bytes de Ticket en las 3 líneas
       function finishTicketRead(raw52Bytes) {
         const decoder = new TextDecoder('ascii');
         const b1 = raw52Bytes.slice(0, 18);
@@ -1304,7 +1290,7 @@
       }
 
       // ==========================================================================
-      // TABLA Y EXPORTACIÓN CSV
+      // TABLA Y EXPORTACIÓN CSV COMPATIBLE CON IOS (BLUEFY) / ANDROID / PC
       // ==========================================================================
       function renderTable() {
         if (state.records.length === 0) {
@@ -1330,7 +1316,7 @@
         sendPacket(0x30);
       });
 
-      dom.btnExportCsv.addEventListener('click', () => {
+      dom.btnExportCsv.addEventListener('click', async () => {
         if (state.records.length === 0) return;
 
         let csvContent = "ID,FECHA,HORA,LITROS\r\n";
@@ -1348,15 +1334,70 @@
 
         const fileName = `FlowSync_data_${y}-${m}-${d}_${h}-${mi}-${s}.csv`;
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.setAttribute('href', url);
-        link.setAttribute('download', fileName);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
 
-        showModal('EXPORTACIÓN CSV', `Archivo generado correctamente:<br/><strong>${fileName}</strong><br/>Registros exportados: ${state.records.length}`);
+        // 1. Web Share API para iOS (Bluefy)
+        if (navigator.share) {
+          try {
+            const file = new File([blob], fileName, { type: 'text/csv' });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                files: [file],
+                title: fileName,
+                text: 'Reporte de caudalímetro FlowSync'
+              });
+              return;
+            }
+          } catch (err) {
+            if (err.name === 'AbortError') return;
+            console.warn('Fallo en navigator.share:', err);
+          }
+        }
+
+        // 2. Descarga clásica (Android y PC)
+        try {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.setAttribute('href', url);
+          link.setAttribute('download', fileName);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+        } catch (e) {
+          console.warn('Fallo en link.click:', e);
+        }
+
+        // 3. Modal de respaldo con opción de copia para iOS
+        showModal(
+          'EXPORTACIÓN CSV',
+          `Archivo: <strong>${fileName}</strong><br/>
+           Registros: <strong>${state.records.length}</strong><br/><br/>
+           <span style="font-size:0.75rem; color:#CCC;">
+             En iOS, si no se abrió el menú de guardar en archivos, puedes copiar el contenido directamente:
+           </span>`,
+          [
+            {
+              text: 'COPIAR AL PORTAPAPELES',
+              className: 'btn btn-warning',
+              action: async () => {
+                try {
+                  if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(csvContent);
+                    showModal('COPIADO', 'Datos CSV copiados al portapapeles.<br/>Puedes pegarlos en <strong>Excel</strong>, <strong>Numbers</strong> o un correo.');
+                  } else {
+                    throw new Error('Clipboard no disponible');
+                  }
+                } catch (e) {
+                  window.prompt('Copia manualmente los datos CSV:', csvContent);
+                }
+              }
+            },
+            {
+              text: 'ACEPTAR',
+              className: 'btn'
+            }
+          ]
+        );
       });
 
       // ==========================================================================
@@ -1477,13 +1518,12 @@
         setTimeout(() => {
           switch (cmd) {
             case 0x30: { 
-              // Emula 4 registros válidos (40B) seguidos de memoria virgen (0xFF)
               const validCount = 4;
               const fullBuffer = new Uint8Array(1 + (validCount * 10) + 10);
               fullBuffer[0] = 0x30;
               for (let i = 0; i < validCount; i++) {
                 const offset = 1 + (i * 10);
-                fullBuffer[offset]     = 23;      // Día
+                fullBuffer[offset]     = 24;      // Día
                 fullBuffer[offset + 1] = 9;       // Mes
                 fullBuffer[offset + 2] = 26;      // Año 2026
                 fullBuffer[offset + 3] = 14 + i;  // Hora
@@ -1495,7 +1535,7 @@
                 fullBuffer[offset + 8] = (vol >> 8) & 0xFF;
                 fullBuffer[offset + 9] = vol & 0xFF;
               }
-              // Bloque 5: Vacío (0xFF) para probar el corte automático
+              // Bloque 5: Vacío (0xFF) para corte automático
               const emptyOffset = 1 + (validCount * 10);
               for (let j = 0; j < 10; j++) {
                 fullBuffer[emptyOffset + j] = 0xFF;
@@ -1533,7 +1573,7 @@
             case 0x36: {
               const res = new Uint8Array(11);
               res[0] = cmd;
-              res[1] = 23; res[2] = 9; res[3] = 26;
+              res[1] = 24; res[2] = 9; res[3] = 26;
               res[4] = 16; res[5] = 40; res[6] = 25;
               const litros = cmd === 0x34 ? 745020 : 18550;
               res[7] = (litros >> 24) & 0xFF;
@@ -1549,15 +1589,15 @@
               handleIncomingChunk(new Uint8Array([cmd]));
               break;
 
-            case 0x38: // Leer RTC con segundos
-              handleIncomingChunk(new Uint8Array([0x38, 23, 9, 26, 17, 30, 45]));
+            case 0x38:
+              handleIncomingChunk(new Uint8Array([0x38, 24, 9, 26, 17, 30, 45]));
               break;
 
-            case 0x39: // Configurar RTC
+            case 0x39:
               handleIncomingChunk(new Uint8Array([0x39, ...data]));
               break;
 
-            case 0x3A: // Cantidad despachos (4 Bytes)
+            case 0x3A:
               handleIncomingChunk(new Uint8Array([0x3A, 0x00, 0x00, 0x01, 0x5E]));
               break;
 
