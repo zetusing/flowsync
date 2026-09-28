@@ -657,7 +657,7 @@
 
   <!-- ==========================================================================
        MODAL EMERGENTE
-       ========================================================================== -->
+       ========================================================================= -->
   <div class="modal-backdrop" id="modal-container">
     <div class="modal-box">
       <h3 class="modal-title" id="modal-title">Título</h3>
@@ -911,10 +911,9 @@
             triggerSimulator();
           }
         } catch (err) {
-          console.warn('Iniciando simulador tras cancelación o falta de hardware:', err);
-          if (err.name !== 'NotFoundError') {
-            triggerSimulator();
-          }
+          // Si el usuario cancela la ventana de sincronización o no hay hardware, activa simulador
+          console.warn('Cancelación en ventana o error en BLE. Iniciando simulador:', err);
+          triggerSimulator();
         }
       }
 
@@ -925,7 +924,7 @@
           setConnectedState(true);
           const elapsed = ((performance.now() - state.connectStartTime) / 1000).toFixed(1);
           showModal('CONEXIÓN EXITOSA', `Dispositivo enlazado correctamente.<br/>Tiempo: ${elapsed}s`);
-        }, 800);
+        }, 600);
       }
 
       async function disconnectBLE() {
